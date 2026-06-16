@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPK Supplier — Dashboard Pengadaan</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ===================== TICKER BAR ===================== -->
+  <div class="ticker-bar">
+    <div class="ticker-left">
+      <span class="ticker-date" id="ticker-date">—</span>
+      <span class="ticker-sep">|</span>
+      <span class="ticker-time" id="ticker-time">00:00:00</span>
+    </div>
+    <div class="ticker-track-wrap">
+      <div class="ticker-track" id="ticker-track">
+        <span class="ticker-text">
+          ◈ Selamat datang di Sistem Pendukung Keputusan Pemilihan Supplier Kain Textile &nbsp;·&nbsp;
+          Metode Simple Additive Weighting (SAW) &nbsp;·&nbsp;
+          Gunakan menu di atas untuk mengelola data Supplier, Kriteria, dan melihat Hasil Rekomendasi &nbsp;·&nbsp;
+          Pastikan total bobot kriteria aktif = 1.00 sebelum menghitung rekomendasi &nbsp;·&nbsp;
+          Sistem ini digunakan oleh Manajer Pengadaan untuk pengambilan keputusan berbasis data &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          ◈ Selamat datang di Sistem Pendukung Keputusan Pemilihan Supplier Kain Textile &nbsp;·&nbsp;
+          Metode Simple Additive Weighting (SAW) &nbsp;·&nbsp;
+          Gunakan menu di atas untuk mengelola data Supplier, Kriteria, dan melihat Hasil Rekomendasi &nbsp;·&nbsp;
+          Pastikan total bobot kriteria aktif = 1.00 sebelum menghitung rekomendasi &nbsp;·&nbsp;
+          Sistem ini digunakan oleh Manajer Pengadaan untuk pengambilan keputusan berbasis data &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="brand-icon">◈</span>
+        <div>
+          <span class="brand-title">SPK SUPPLIER KAIN TEXTILE</span>
+          <span class="brand-sub">Sistem Pendukung Keputusan · Metode SAW</span>
+        </div>
+      </div>
+      <nav class="header-nav">
+        <button class="nav-btn active" onclick="showSection('dashboard')">Dashboard</button>
+        <button class="nav-btn" onclick="showSection('supplier')">Supplier</button>
+        <button class="nav-btn" onclick="showSection('kriteria')">Kriteria</button>
+        <button class="nav-btn" onclick="showSection('rekomendasi')">Rekomendasi</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- ===================== TOAST NOTIFIKASI ===================== -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- ===================== SECTION: DASHBOARD ===================== -->
+    <section id="section-dashboard" class="section active">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Dashboard</h1>
+          <p class="section-desc">Ringkasan sistem pendukung keputusan pemilihan supplier bahan baku</p>
+        </div>
+        <span class="timestamp-badge" id="last-update">—</span>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <span class="stat-label">Total Supplier</span>
+          <span class="stat-value" id="stat-supplier">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Total Kriteria</span>
+          <span class="stat-value" id="stat-kriteria">—</span>
+        </div>
+        <div class="stat-card accent">
+          <span class="stat-label">🏆 Supplier Terbaik</span>
+          <span class="stat-value" id="stat-terbaik" style="font-size:1.1rem">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Skor Tertinggi</span>
+          <span class="stat-value" id="stat-skor">—</span>
+        </div>
+      </div>
+
+      <!-- Penjelasan alur metode SAW -->
+      <div class="info-box">
+        <h3 class="info-title">Alur Perhitungan Metode SAW</h3>
+        <div class="saw-steps">
+          <div class="saw-step">
+            <span class="step-num">1</span>
+            <div>
+              <strong>Matriks Keputusan X<sub>ij</sub></strong> — Kumpulkan nilai mentah setiap
+              supplier (alternatif) untuk setiap kriteria
+            </div>
+          </div>
+          <div class="saw-step">
+            <span class="step-num">2</span>
+            <div>
+              <strong>Normalisasi R<sub>ij</sub></strong> —
+              Benefit: R = X<sub>ij</sub> / max(X<sub>j</sub>) &nbsp;|&nbsp;
+              Cost: R = min(X<sub>j</sub>) / X<sub>ij</sub>
+            </div>
+          </div>
+          <div class="saw-step">
+            <span class="step-num">3</span>
+            <div>
+              <strong>Nilai Preferensi V<sub>i</sub></strong> —
+              V<sub>i</sub> = Σ (W<sub>j</sub> × R<sub>ij</sub>) &nbsp;→&nbsp; jumlah seluruh bobot × nilai ternormalisasi
+            </div>
+          </div>
+          <div class="saw-step">
+            <span class="step-num">4</span>
+            <div>
+              <strong>Peringkat</strong> — Urutkan supplier dari V<sub>i</sub> tertinggi ke terendah.
+              Peringkat 1 = rekomendasi terbaik.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabel kriteria ringkas di dashboard -->
+      <div class="card" style="margin-top:1.5rem">
+        <div class="card-header">
+          <span class="card-title">Kriteria & Bobot Aktif</span>
+        </div>
+        <div class="table-wrap">
+          <table id="table-kriteria-dash">
+            <thead>
+              <tr><th>Kode</th><th>Nama Kriteria</th><th>Jenis</th><th>Bobot</th><th>Bobot (%)</th></tr>
+            </thead>
+            <tbody id="tbody-kriteria-dash">
+              <tr><td colspan="5" class="empty-state">Memuat...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== SECTION: SUPPLIER ===================== -->
+    <section id="section-supplier" class="section">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Data Supplier</h1>
+          <p class="section-desc">Kelola daftar supplier beserta nilai mentah setiap kriteria</p>
+        </div>
+      </div>
+
+      <!-- Form Tambah Supplier -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Tambah Supplier Baru</span>
+          <button class="toggle-btn" id="toggle-form-btn" onclick="toggleForm()">+ Buka Form</button>
+        </div>
+
+        <div id="form-supplier" class="form-wrap hidden">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nama Supplier <span class="req">*</span></label>
+              <input type="text" id="inp-nama" placeholder="PT. Nama Perusahaan" />
+            </div>
+            <div class="form-group">
+              <label>Kontak</label>
+              <input type="text" id="inp-kontak" placeholder="021-xxxxxxx" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Alamat</label>
+            <input type="text" id="inp-alamat" placeholder="Jl. ..." />
+          </div>
+
+          <div class="divider"></div>
+          <p class="form-section-title">Nilai Kriteria <span class="req">* semua wajib diisi</span></p>
+          <div class="nilai-grid" id="nilai-inputs">
+            <p class="loading-text">Memuat kriteria...</p>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-secondary" onclick="toggleForm()">Batal</button>
+            <button class="btn-primary" onclick="submitSupplier()">Simpan Supplier</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabel Supplier -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Daftar Supplier & Nilai Mentah</span>
+          <button class="btn-refresh" onclick="loadSupplier()">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table id="table-supplier">
+            <thead id="thead-supplier">
+              <tr><th>Loading...</th></tr>
+            </thead>
+            <tbody id="tbody-supplier">
+              <tr><td>Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== SECTION: KRITERIA ===================== -->
+    <section id="section-kriteria" class="section">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Manajemen Kriteria</h1>
+          <p class="section-desc">Atur bobot setiap kriteria. Total bobot harus = 1.00</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Bobot Kriteria</span>
+          <span id="total-bobot-display" class="bobot-badge">Total: 0.00</span>
+        </div>
+        <div id="kriteria-form-wrap">
+          <p class="loading-text" style="padding:1.5rem">Memuat data kriteria...</p>
+        </div>
+        <div class="form-actions" style="padding: 0 1.5rem 1.5rem">
+          <button class="btn-primary" onclick="saveBobot()">Simpan Bobot</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== SECTION: REKOMENDASI ===================== -->
+    <section id="section-rekomendasi" class="section">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Hasil Rekomendasi SAW</h1>
+          <p class="section-desc">Peringkat supplier berdasarkan perhitungan Simple Additive Weighting</p>
+        </div>
+        <button class="btn-primary" onclick="loadRekomendasi()">▶ Hitung SAW</button>
+      </div>
+
+      <!-- Podium ranking -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Peringkat Supplier</span>
+          <span id="rek-timestamp" class="card-hint"></span>
+        </div>
+        <div id="rekomendasi-result">
+          <p class="empty-state">Klik tombol "Hitung SAW" untuk melihat hasil rekomendasi</p>
+        </div>
+      </div>
+
+      <!-- Langkah 1: Matriks Keputusan -->
+      <div id="matriks-section" class="card hidden">
+        <div class="card-header">
+          <span class="card-title">Langkah 1 &mdash; Matriks Keputusan (Nilai Mentah X<sub>ij</sub>)</span>
+          <span class="card-hint">Nilai asli tiap supplier per kriteria sebelum dinormalisasi</span>
+        </div>
+        <div class="table-wrap">
+          <table id="table-matriks"><thead></thead><tbody></tbody></table>
+        </div>
+      </div>
+
+      <!-- Langkah 2: Matriks Normalisasi -->
+      <div id="normalisasi-section" class="card hidden">
+        <div class="card-header">
+          <span class="card-title">Langkah 2 &mdash; Matriks Normalisasi R<sub>ij</sub></span>
+          <span class="card-hint">Benefit: X / max(X) &nbsp;&nbsp;|&nbsp;&nbsp; Cost: min(X) / X</span>
+        </div>
+        <div class="table-wrap">
+          <table id="table-normalisasi"><thead></thead><tbody></tbody></table>
+        </div>
+      </div>
+
+      <!-- Langkah 3: Pembobotan & Skor Akhir -->
+      <div id="detail-section" class="card hidden">
+        <div class="card-header">
+          <span class="card-title">Langkah 3 &mdash; Pembobotan & Skor Akhir V<sub>i</sub></span>
+          <span class="card-hint">V<sub>i</sub> = Σ (W<sub>j</sub> &times; R<sub>ij</sub>)</span>
+        </div>
+        <div class="table-wrap">
+          <table id="table-detail"><thead></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="mobile-nav">
+    <div class="mobile-nav-inner">
+      <button class="mnav-btn active" onclick="showSection('dashboard'); setMobileNav(this)">
+        <span class="icon">⊞</span>Dashboard
+      </button>
+      <button class="mnav-btn" onclick="showSection('supplier'); setMobileNav(this)">
+        <span class="icon">🏭</span>Supplier
+      </button>
+      <button class="mnav-btn" onclick="showSection('kriteria'); setMobileNav(this)">
+        <span class="icon">⚖</span>Kriteria
+      </button>
+      <button class="mnav-btn" onclick="showSection('rekomendasi'); setMobileNav(this)">
+        <span class="icon">★</span>Hasil
+      </button>
+    </div>
+  </nav>
+
+  <script>
+    window.API_URL = "https://spk-supplier-backend-production.up.railway.app/api"; // ← GANTI INI setelah deploy Railway
+  </script>
+
+  <script src="app.js"></script>
+</body>
+</html>
